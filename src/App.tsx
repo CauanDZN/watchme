@@ -7,7 +7,7 @@ import './styles/global.scss';
 
 export function App() {
 
-  const [selectedGenreId, setSelectedGenreId] = useState(1);
+  const [selectedGenreId, setSelectedGenreId] = useState<number>(1);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row' }}>

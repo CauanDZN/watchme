@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, memo } from 'react';
+import { List, ListRowRenderer} from 'react-virtualized'
 
 import { Button } from './Button';
 import { api } from '../services/api';
@@ -16,7 +17,7 @@ interface SideBarProps {
   setSelectedGenreId: (id:number)=>void;
 };
 
-export function SideBar({selectedGenreId, setSelectedGenreId}:SideBarProps) {
+function SideBarComponent({selectedGenreId, setSelectedGenreId}:SideBarProps) {
 
   const [genres, setGenres] = useState<GenreResponseProps[]>([]);
 
@@ -26,20 +27,37 @@ export function SideBar({selectedGenreId, setSelectedGenreId}:SideBarProps) {
     });
   }, []);
 
+  const handleClickButton = useCallback((id: number) => {
+    setSelectedGenreId(id);
+  },[])
+
+  const rowRenderer:ListRowRenderer = /* useCallback( */({index,key,style})=>{
+    return (
+      <div className="buttons-container" key={String(key)} style={style}>
+      <Button
+        title={genres[index].title}
+        iconName={genres[index].name}
+        onClick={()=>handleClickButton(genres[index].id)}
+        selected={selectedGenreId === genres[index].id}
+      />
+      </div>
+    )
+  }/* ,[]) */
+
   return (
     <nav className="sidebar">
       <span>Watch<p>Me</p></span>
-      <div className="buttons-container">
-        {genres.map(genre => (
-          <Button
-            key={String(genre.id)}
-            title={genre.title}
-            iconName={genre.name}
-            onClick={() => setSelectedGenreId(genre.id)}
-            selected={selectedGenreId === genre.id}
-          />
-        ))}
-      </div>
+      <List 
+        height={470}
+        rowHeight={78}
+        width={318}
+        rowCount={genres.length}
+        rowRenderer={rowRenderer}
+        />
     </nav>
   )
 };
+
+export const SideBar = memo(SideBarComponent,(prevProps, nextProps)=>{
+  return Object.is(prevProps.selectedGenreId, nextProps.selectedGenreId)
+})
